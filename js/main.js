@@ -1,4 +1,110 @@
-const levelArray = [
+class Map {
+    constructor(mapArray, wayPoint) {
+        this.mapArray = mapArray;
+        this.wayPoint = wayPoint;
+
+        this.createDomElementmap(this.mapArray);
+    }
+    createDomElementmap(mapArray) {
+        for (let y = 0; y < mapArray.length; y++) {
+            //creation of div (line)
+            const divLine = document.createElement('div');
+            divLine.setAttribute("class", "line")
+            divLine.style.bottom = mapArray.length - y - 1 + "%";
+            document.getElementById("map").appendChild(divLine);
+            for (let x = 0; x < mapArray[y].length; x++) {
+                //creation of div (cell)
+                const divCell = document.createElement('div');
+                switch (mapArray[y][x]) {
+                    case 0:
+                        divCell.setAttribute("class", "v0");
+                        break;
+                    case 1:
+                        divCell.setAttribute("class", "v1");
+                        break;
+                    case 2:
+                        divCell.setAttribute("class", "v2");
+                        break;
+                    case 3:
+                        divCell.setAttribute("class", "v3");
+                        break;
+                    case 4:
+                        divCell.setAttribute("class", "v4");
+                        break;
+                    case 5:
+                        divCell.setAttribute("class", "v5");
+                        break;
+                    case 6:
+                        divCell.setAttribute("class", "v6");
+                        break;
+                    default:
+                        divCell.setAttribute("class", "error");
+                }
+                divCell.style.left = x + "%";
+                divCell.style.bottom = mapArray.length - y - 1 + "%";
+                divLine.appendChild(divCell);
+            }
+        }
+    }
+}
+
+class Monster {
+    constructor(type, health, speed, attack, positionX, positionY) {
+        this.type = type;
+        this.health = health;
+        this.speed = speed;
+        this.attack = attack;
+        this.monsterElm = null; //will store a dom element
+        this.positionX = positionX;
+        this.positionY = positionY;
+        this.movementDirection = null;
+        this.createDomElement(this.type, this.positionX, this.positionY);
+    }
+    createDomElement(type, positionX, positionY) {
+        this.monsterElm = document.createElement('div');
+        this.monsterElm.setAttribute("class", "monster")
+        switch (type) {
+            case 'soldier':
+                this.monsterElm.setAttribute("class", "monster soldier")
+                break;
+            case 'speeder':
+                this.monsterElm.setAttribute("class", "monster speeder")
+                break;
+            case 'boss':
+                this.monsterElm.setAttribute("class", "monster boss")
+                break;
+            default:
+                this.monsterElm.setAttribute("class", "error");
+        }
+        this.monsterElm.style.left = positionX + "%";
+        this.monsterElm.style.bottom = positionY + "%";
+        document.getElementById("monsters").appendChild(this.monsterElm);
+    }
+    movement(direction) {
+        switch (direction) {
+            case 'top':
+                this.positionY++;
+                this.monsterElm.style.bottom = this.positionY + "%";
+                break;
+            case 'bottom':
+                this.positionY--;
+                this.monsterElm.style.bottom = this.positionY + "%";
+                break;
+            case 'left':
+                this.positionX--;
+                this.monsterElm.style.left = this.positionX + "%";
+                break;
+            case 'right':
+                this.positionX++;
+                this.monsterElm.style.left = this.positionX + "%";
+                break;
+            default:
+        }
+    }
+}
+
+
+const mapArrayLevel1 = [
     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -100,119 +206,74 @@ const levelArray = [
     [0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 3, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     [0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 1, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 ];
-const wayPoints = [
+const wayPointsLevel1 = [
     {
-        x:10,
-        y:0,
-        newDirection:'top'
+        x: 10,
+        y: 0,
+        newDirection: 'top'
     },
     {
-        x:10,
-        y:42,
-        newDirection:'right'
+        x: 10,
+        y: 42,
+        newDirection: 'right'
     },
     {
-        x:45,
-        y:42,
-        newDirection:'top'
+        x: 45,
+        y: 42,
+        newDirection: 'top'
     },
     {
-        x:45,
-        y:68,
-        newDirection:'right'
+        x: 45,
+        y: 68,
+        newDirection: 'right'
     },
     {
-        x:7,
-        y:68,
-        newDirection:'top'
+        x: 7,
+        y: 68,
+        newDirection: 'top'
     },
     {
-        x:7,
-        y:91,
-        newDirection:'right'
+        x: 7,
+        y: 91,
+        newDirection: 'right'
     },
     {
-        x:90,
-        y:91,
-        newDirection:'bottom'
+        x: 90,
+        y: 91,
+        newDirection: 'bottom'
     },
     {
-        x:91,
-        y:35,
-        newDirection:'left'
+        x: 91,
+        y: 35,
+        newDirection: 'left'
     },
     {
-        x:67,
-        y:35,
-        newDirection:'top'
+        x: 67,
+        y: 35,
+        newDirection: 'top'
     },
     {
-        x:67,
-        y:70,
-        newDirection:'left'
+        x: 67,
+        y: 70,
+        newDirection: 'left'
     },
     {
-        x:54,
-        y:70,
-        newDirection:'bottom'
+        x: 54,
+        y: 70,
+        newDirection: 'bottom'
     },
     {
-        x:54,
-        y:4,
-        newDirection:'right'
+        x: 54,
+        y: 4,
+        newDirection: 'right'
     },
     {
-        x:99,
-        y:4,
-        newDirection:'end'
+        x: 99,
+        y: 4,
+        newDirection: 'end'
     },
 ];
+const mapLevel1 = new Map(mapArrayLevel1, wayPointsLevel1);
 
+const monster = new Monster("soldier", 1, 1, 1, 10, 0);
 
-for (let y = 0; y < levelArray.length; y++) {
-    //creation of div (line)
-    const divLine = document.createElement('div');
-    divLine.setAttribute("class", "line")
-    divLine.style.bottom = levelArray.length - y - 1 + "%";
-    document.getElementById("board").appendChild(divLine);
-    for (let x = 0; x < levelArray[y].length; x++) {
-        //creation of div (cell)
-        const divCell = document.createElement('div');
-        switch (levelArray[y][x]) {
-            case 0:
-                divCell.setAttribute("class", "v0");
-                break;
-            case 1:
-                divCell.setAttribute("class", "v1");
-                break;
-            case 2:
-                divCell.setAttribute("class", "v2");
-                break;
-            case 3:
-                divCell.setAttribute("class", "v3");
-                break;
-            case 4:
-                divCell.setAttribute("class", "v4");
-                break;
-            case 5:
-                divCell.setAttribute("class", "v5");
-                break;
-            case 6:
-                divCell.setAttribute("class", "v6");
-                break;
-            default:
-                divCell.setAttribute("class", "error");
-        }
-        divCell.style.left = x + "%";
-        divCell.style.bottom = levelArray.length - y - 1 + "%";
-        divLine.appendChild(divCell);
-    }
-}
-
-wayPoints.forEach((element) => {
-    const divWayPoint = document.createElement('div');
-    divWayPoint.setAttribute("class", "way-point");
-    divWayPoint.style.left = element.x + "%";
-    divWayPoint.style.bottom = element.y + "%";
-    document.getElementById("board").appendChild(divWayPoint);
-  });
