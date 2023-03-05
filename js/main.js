@@ -1,9 +1,46 @@
+class Game {
+    constructor() {
+        this.map = null;
+        this.monsterArray = [];
+    }
+
+    start() {
+        //this.map = new Map(mapArrayLevel1, wayPointsLevel1);
+        this.map = new Map(mapArrayLevel2, wayPointsLevel2);
+
+        setInterval(() => {
+            const monster = new Monster("soldier", 1, 1, 1, this.map.wayPoint[0].x, this.map.wayPoint[0].y);
+            this.monsterArray.push(monster);
+        }, 1000);
+
+        setInterval(() => {
+            this.monsterArray.forEach((monster) => {
+                this.map.wayPoint.forEach((waypoint) => {
+                    if (waypoint.x === monster.positionX && waypoint.y === monster.positionY) {
+                        monster.direction = waypoint.newDirection;
+                    }
+                });
+                monster.movement(monster.direction);
+                this.removeMonster(monster);
+            });
+        }, 100);
+    }
+
+    removeMonster(monsterInstance) {
+        if (this.map.wayPoint[this.map.wayPoint.length - 1].x === monsterInstance.positionX && this.map.wayPoint[this.map.wayPoint.length - 1].y === monsterInstance.positionY) {
+            monsterInstance.monsterElm.remove();
+            this.monsterArray.shift();
+        }
+    }
+}
+
 class Map {
     constructor(mapArray, wayPoint) {
         this.mapArray = mapArray;
         this.wayPoint = wayPoint;
         this.createDomElementmap(this.mapArray);
     }
+
     createDomElementmap(mapArray) {
         for (let y = 0; y < mapArray.length; y++) {
             const divLine = document.createElement('div');
@@ -55,9 +92,10 @@ class Monster {
         this.positionX = positionX;
         this.positionY = positionY;
         this.movementDirection = null;
-        this.createDomElement(this.type, this.positionX, this.positionY);
+        this.createDomElementMonster(this.type, this.positionX, this.positionY);
     }
-    createDomElement(type, positionX, positionY) {
+
+    createDomElementMonster(type, positionX, positionY) {
         this.monsterElm = document.createElement('div');
         this.monsterElm.setAttribute("class", "monster")
         switch (type) {
@@ -77,6 +115,7 @@ class Monster {
         this.monsterElm.style.bottom = positionY + "%";
         document.getElementById("monsters").appendChild(this.monsterElm);
     }
+
     movement(direction) {
         switch (direction) {
             case 'top':
@@ -100,6 +139,28 @@ class Monster {
     }
 }
 
+class Tower {
+    constructor(power, rateOfFire, range, positionX, positionY) {
+        this.power = power;
+        this.rateOfFire = rateOfFire;
+        this.range = range;
+        this.positionX = positionX;
+        this.positionY = positionY;
+        this.towerElm = null;
+        this.createDomElementTower(this.positionX, this.positionY);
+    }
+    createDomElementTower(positionX, positionY) {
+        this.towerElm = document.createElement('div');
+        this.towerElm.setAttribute("class", "tower");
+        this.towerElm.style.left = positionX + "%";
+        this.towerElm.style.bottom = positionY + "%";
+        document.getElementById("towers").appendChild(this.towerElm);
+
+    }
+    displayRange(range){
+        
+    }
+}
 
 const mapArrayLevel1 = [
     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -439,28 +500,9 @@ const wayPointsLevel2 = [
         newDirection: 'end'
     }
 ];
-const mapLeveltest = new Map(mapArrayLevel1, wayPointsLevel1);
-//const mapLeveltest = new Map(mapArrayLevel2, wayPointsLevel2);
-
-monsterArray = [];
-setInterval(() => {
-    const monsterTest = new Monster("soldier", 1, 1, 1, mapLeveltest.wayPoint[0].x, mapLeveltest.wayPoint[0].y);
-    monsterArray.push(monsterTest);
-}, 1000);
 
 
-setInterval(() => {
-    monsterArray.forEach((monster) => {
-        mapLeveltest.wayPoint.forEach((waypoint) => {
-            if (waypoint.x === monster.positionX && waypoint.y === monster.positionY) {
-                monster.direction = waypoint.newDirection;
-            }
-        });
-        monster.movement(monster.direction);
+const game = new Game();
+game.start();
 
-        if (mapLeveltest.wayPoint[mapLeveltest.wayPoint.length - 1].x === monster.positionX && mapLeveltest.wayPoint[mapLeveltest.wayPoint.length - 1].y === monster.positionY) {
-            monster.monsterElm.remove();
-            monsterArray.shift();
-        }
-    });
-}, 100);
+const towerTest = new Tower(1, 1, 1, 50, 50);
