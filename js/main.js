@@ -2,36 +2,69 @@ class Game {
     constructor() {
         this.map = null;
         this.monsterArray = [];
+        this.towerArray = [];
     }
 
     start() {
-        //this.map = new Map(mapArrayLevel1, wayPointsLevel1);
-        this.map = new Map(mapArrayLevel2, wayPointsLevel2);
+        this.map = new Map(mapArrayLevel1, wayPointsLevel1);
+        //this.map = new Map(mapArrayLevel2, wayPointsLevel2);
 
         setInterval(() => {
             const monster = new Monster("soldier", 1, 1, 1, this.map.wayPoint[0].x, this.map.wayPoint[0].y);
             this.monsterArray.push(monster);
         }, 1000);
 
+        const towerTest = new Tower(1, 1, 20, 13, 80);
+        this.towerArray.push(towerTest);
+        const towerTest2 = new Tower(1, 1, 10, 50, 50);
+        this.towerArray.push(towerTest2);
+        const towerTest3 = new Tower(1, 1, 10, 39, 47);
+        this.towerArray.push(towerTest3);
+
         setInterval(() => {
-            this.monsterArray.forEach((monster) => {
-                this.map.wayPoint.forEach((waypoint) => {
-                    if (waypoint.x === monster.positionX && waypoint.y === monster.positionY) {
-                        monster.direction = waypoint.newDirection;
-                    }
-                });
-                monster.movement(monster.direction);
-                this.removeMonster(monster);
+            this.monsterArray.forEach((element) => {
+                element.moveMonster();
+                this.checkDistance();
+                this.removeMonster(element);
             });
         }, 100);
     }
-
     removeMonster(monsterInstance) {
         if (this.map.wayPoint[this.map.wayPoint.length - 1].x === monsterInstance.positionX && this.map.wayPoint[this.map.wayPoint.length - 1].y === monsterInstance.positionY) {
             monsterInstance.monsterElm.remove();
             this.monsterArray.shift();
         }
     }
+    checkDistance() {
+        let distance = 0;
+        this.towerArray.forEach((tower) => {
+            if (tower.isTargetAcquired === false) {
+                this.monsterArray.some(function (monster, index) {
+                    distance = Math.sqrt(Math.pow(monster.positionX - tower.positionX, 2) + Math.pow(monster.positionY - tower.positionY, 2));
+                    if (distance <= tower.range) {
+                        tower.isTargetAcquired = true;
+                        tower.target = monster;
+                        monster.monsterElm.classList.add("targeted");
+                        return true;
+                    }
+                });
+            } else {
+                distance = Math.sqrt(Math.pow(tower.target.positionX - tower.positionX, 2) + Math.pow(tower.target.positionY - tower.positionY, 2)); 
+                if (distance > tower.range) {
+                    tower.target.monsterElm.classList.remove("targeted");
+                    tower.isTargetAcquired = false;
+                    tower.target = null;
+                    return true;
+                }
+            }
+
+
+        });
+
+
+        return distance;
+    }
+
 }
 
 class Map {
@@ -40,7 +73,6 @@ class Map {
         this.wayPoint = wayPoint;
         this.createDomElementmap(this.mapArray);
     }
-
     createDomElementmap(mapArray) {
         for (let y = 0; y < mapArray.length; y++) {
             const divLine = document.createElement('div');
@@ -94,19 +126,18 @@ class Monster {
         this.movementDirection = null;
         this.createDomElementMonster(this.type, this.positionX, this.positionY);
     }
-
     createDomElementMonster(type, positionX, positionY) {
         this.monsterElm = document.createElement('div');
-        this.monsterElm.setAttribute("class", "monster")
+        this.monsterElm.setAttribute("class", "monster");
         switch (type) {
             case 'soldier':
-                this.monsterElm.setAttribute("class", "monster soldier")
+                this.monsterElm.setAttribute("class", "monster soldier");
                 break;
             case 'speeder':
-                this.monsterElm.setAttribute("class", "monster speeder")
+                this.monsterElm.setAttribute("class", "monster speeder");
                 break;
             case 'boss':
-                this.monsterElm.setAttribute("class", "monster boss")
+                this.monsterElm.setAttribute("class", "monster boss");
                 break;
             default:
                 this.monsterElm.setAttribute("class", "error");
@@ -115,9 +146,13 @@ class Monster {
         this.monsterElm.style.bottom = positionY + "%";
         document.getElementById("monsters").appendChild(this.monsterElm);
     }
-
-    movement(direction) {
-        switch (direction) {
+    moveMonster() {
+        game.map.wayPoint.forEach((waypoint) => {
+            if (waypoint.x === this.positionX && waypoint.y === this.positionY) {
+                this.direction = waypoint.newDirection;
+            }
+        });
+        switch (this.direction) {
             case 'top':
                 this.positionY++;
                 this.monsterElm.style.bottom = this.positionY + "%";
@@ -144,6 +179,8 @@ class Tower {
         this.power = power;
         this.rateOfFire = rateOfFire;
         this.range = range;
+        this.isTargetAcquired = false;
+        this.target = null;
         this.positionX = positionX;
         this.positionY = positionY;
         this.towerElm = null;
@@ -155,10 +192,15 @@ class Tower {
         this.towerElm.style.left = positionX + "%";
         this.towerElm.style.bottom = positionY + "%";
         document.getElementById("towers").appendChild(this.towerElm);
-
+        this.displayRange(this.range, this.positionX, this.positionY)
     }
-    displayRange(range){
-        
+    displayRange(range, positionX, positionY) {
+        ctx.beginPath();
+        ctx.arc(positionX + 1, 100 - positionY, range, 0, Math.PI * 2);
+        ctx.fillStyle = 'red';
+        ctx.globalAlpha = 0.54;
+        ctx.fill();
+        ctx.closePath();
     }
 }
 
@@ -502,7 +544,9 @@ const wayPointsLevel2 = [
 ];
 
 
+const canvas = document.querySelector('canvas');
+const ctx = canvas.getContext('2d');
 const game = new Game();
 game.start();
 
-const towerTest = new Tower(1, 1, 1, 50, 50);
+
