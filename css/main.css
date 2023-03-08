@@ -10,12 +10,11 @@ body {
 
 #board {
     background-color: #800000;
-    /*height: 80vh;*/
     width: 1280px;
     height: 768px;
     position: relative;
     margin: 2.5vh 2.5vh;
-    background-image: url("/images/maplevel1.png");
+    background-image: url("../images/maplevel1.png");
 }
 #board:after {
     content: "";
