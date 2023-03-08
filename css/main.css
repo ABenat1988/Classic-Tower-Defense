@@ -1,12 +1,12 @@
-*{
+* {
     margin: 0;
     padding: 0;
 }
-
 body {
     margin: 0;
     padding: 0;
 }
+
 
 #board {
     background-color: #800000;
@@ -21,43 +21,57 @@ body {
     display: block;
     padding-bottom: 100%;
 }
+#board>div div {
+    position: absolute;
+}
 
-canvas{
+
+canvas {
     height: 100%;
     position: absolute;
     z-index: 1000;
 }
 
-#monsters .monster{
-    width : 20px;
+
+#monsters .targeted {
+    background-color: #00f7ff;
+}
+#monsters .monster.soldier {
+    width: 20px;
     height: 20px;
-    position: absolute;
-    background-color:#000000;
+    background-image: url("../images/enemi-soldier-bg.png");
 }
-#monsters .targeted{
-    background-color:#00f7ff;
+#monsters .monster.tank {
+    width: 26px;
+    height: 26px;
+    background-image: url("../images/enemi-tank-bg.png");
+}
+#monsters .monster.boss {
+    width: 32px;
+    height: 32px;
+    background-image: url("../images/enemi-boss-bg.png");
 }
 
 
-#towers .tower{
-    width : 64px;
+#towers-placement .placement {
+    width: 64px;
     height: 64px;
-    position: absolute;
-    background-color:#1900ff;
+    background-color: rgba(221, 211, 211, 0.4);
+}
+#towers-placement .placement:hover {
+    background-color: rgba(221, 211, 211, 0.8);
 }
 
 
-#projectiles .projectile{
-    width : 15px;
-    height: 15px;
-    position: absolute;
-    background-color:#ff0000;
-}
-
-#towers-placement .placement{
-    width : 64px;
+#towers .tower {
+    width: 64px;
     height: 64px;
-    position: absolute;
-    background-color:#ff0000;
+    background-image: url("../images/tower-animated.gif");
+}
 
+
+#projectiles .projectile {
+    width: 10px;
+    height: 10px;
+    background-image: url("../images/projectile-animated.gif");
 }
