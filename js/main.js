@@ -3,12 +3,16 @@ class Game {
         this.map = null;
         this.monsterArray = [];
         this.towerArray = [];
-        this.money = 1000000;
+        this.money = 100;
+        this.heart = 10;
     }
 
     start() {
         this.map = new Map(wayPointsLevel1, towerPlacementLevel1);
-
+        this.updateBoardText("#coin span", this.money);
+        this.updateBoardText("#heart span", this.heart);
+    }
+    launch(){
         setInterval(() => {
             const monster = new Tank(this.map.wayPoint[0].x, this.map.wayPoint[0].y);
             this.monsterArray.push(monster);
@@ -17,10 +21,9 @@ class Game {
         setInterval(() => {
             this.monsterArray.forEach((monsterElementInterval) => {
                 monsterElementInterval.moveMonster();
-                this.removeMonster(monsterElementInterval);
+                this.removeMonsterEndofWay(monsterElementInterval);
             });
-        }, 25);
-
+        }, 10);
         setInterval(() => {
             this.towerArray.forEach((towerElementDistance) => {
                 let distance = 0;
@@ -69,14 +72,31 @@ class Game {
             });
         }, 5);
     }
-    removeMonster(monsterInstance) {
+    removeMonsterEndofWay(monsterInstance) {
         if (this.map.wayPoint[this.map.wayPoint.length - 1].x * this.map.squareDimension + this.map.squareDimension / 2 === monsterInstance.positionX && this.map.wayPoint[this.map.wayPoint.length - 1].y * this.map.squareDimension + this.map.squareDimension / 2 === monsterInstance.positionY) {
+            this.heart -= monsterInstance.attack;
+            this.checkGameOver();
+            this.updateBoardText("#heart span", this.heart);
             monsterInstance.monsterElm.remove();
             this.monsterArray.shift();
         }
     }
-    earnMoney(){
-
+    updateBoardText(target, value){
+        document.querySelector(target).innerText = value;
+    }
+    spendMoney(cost){
+        if(this.money - cost >= 0){
+            this.money -= cost;
+            this.updateBoardText("#coin span", this.money)
+            return true
+        } else {
+            return false;
+        }
+    }
+    checkGameOver(){
+        if (this.heart >0){
+            window.location.href = "./gameover.html" ;
+        }
     }
 }
 
@@ -103,12 +123,13 @@ class Map {
 }
 
 class Monster {
-    constructor(type, health, attack, price, width, positionX, positionY) {
+    constructor(type, health, attack, revenu, width, positionX, positionY) {
         this.type = type;
         this.health = health;
         this.attack = attack;
+        this.revenu = revenu;
         this.monsterElm = null;
-        this.price = price;
+        this.alreadyDestroyed = false;
         this.positionX = positionX * game.map.squareDimension + game.map.squareDimension / 2;
         this.positionY = positionY * game.map.squareDimension + game.map.squareDimension / 2;
         this.width = width;
@@ -178,37 +199,21 @@ class Boss extends Monster {
     }
 }
 
-
-
-
-
-
-
-
-
 class Tower {
     constructor(power, rateOfFire, range, positionX, positionY) {
         this.power = power;
         this.rateOfFire = rateOfFire;
         this.range = range;
+        this.level = 1;
         this.cost = 50;
-
-
         this.projectilesArray = [];
-
         this.isTargetAcquired = false;
         this.target = null;
-
         this.positionX = positionX * game.map.squareDimension + game.map.squareDimension;
         this.positionY = positionY * game.map.squareDimension + game.map.squareDimension;
         this.width = 64;
         this.towerElm = null;
-
-        this.spendMoney();
         this.createDomElementTower();
-    }
-    spendMoney(){
-        game.money -= this.cost; 
     }
     createDomElementTower() {
         this.towerElm = document.createElement('div');
@@ -254,10 +259,6 @@ class Tower {
         this.projectilesArray = [];
     }
 }
-
-
-
-
 
 class Projectile {
     constructor(sourceTower, target) {
@@ -473,12 +474,13 @@ const towerPlacementLevel1 = [
 //const ctx = canvas.getContext('2d');
 const game = new Game();
 game.start();
+game.launch();
 
 window.addEventListener("click", (evt) => {
     console.log(evt.target.dataset.positionX);
     console.log(evt.target.dataset.positionY);
 
-    if (evt.target.className === "placement" && game.money >= 50) {
+    if (evt.target.className === "placement" && game.spendMoney(50)) {
         game.towerArray.push(new Tower(1, 10, 5, evt.target.dataset.positionX, evt.target.dataset.positionY));
     }
 });

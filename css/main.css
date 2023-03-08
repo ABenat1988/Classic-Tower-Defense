@@ -5,6 +5,7 @@
 body {
     margin: 0;
     padding: 0;
+    display: flex;
 }
 
 
@@ -74,4 +75,19 @@ canvas {
     width: 10px;
     height: 10px;
     background-image: url("../images/projectile-animated.gif");
+}
+
+
+
+#board{
+    display: flex;
+}
+
+
+#game-over{
+    height: 100vh;
+    width: 100vw;
+    background-image: url("../images/game-over-background.gif");
+    background-position: center;
+    background-size: 100%;
 }
