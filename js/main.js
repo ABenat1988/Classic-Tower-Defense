@@ -3,28 +3,80 @@ class Game {
         this.map = null;
         this.monsterArray = [];
         this.towerArray = [];
+        this.money = 1000000;
     }
 
     start() {
         this.map = new Map(wayPointsLevel1, towerPlacementLevel1);
 
         setInterval(() => {
-            const monster = new Soldier(this.map.wayPoint[0].x, this.map.wayPoint[0].y);
+            const monster = new Tank(this.map.wayPoint[0].x, this.map.wayPoint[0].y);
             this.monsterArray.push(monster);
         }, 1750);
 
         setInterval(() => {
-            this.monsterArray.forEach((element) => {
-                element.moveMonster();
-                this.removeMonster(element);
+            this.monsterArray.forEach((monsterElementInterval) => {
+                monsterElementInterval.moveMonster();
+                this.removeMonster(monsterElementInterval);
             });
-        }, 20);
+        }, 25);
+
+        setInterval(() => {
+            this.towerArray.forEach((towerElementDistance) => {
+                let distance = 0;
+                if (towerElementDistance.isTargetAcquired === false) {
+                    this.monsterArray.some((monsterElement) => {
+                        distance = Math.sqrt(Math.pow(monsterElement.positionX - towerElementDistance.positionX, 2) + Math.pow(monsterElement.positionY - towerElementDistance.positionY, 2));
+                        if (distance <= towerElementDistance.range * 32) {
+                            towerElementDistance.isTargetAcquired = true;
+                            towerElementDistance.target = monsterElement;
+                            monsterElement.monsterElm.classList.add("targeted");
+                            towerElementDistance.shoot();
+                            return true;
+                        }
+                    });
+                } else {
+                    distance = Math.sqrt(Math.pow(towerElementDistance.target.positionX - towerElementDistance.positionX, 2) + Math.pow(towerElementDistance.target.positionY - towerElementDistance.positionY, 2));
+                    if (distance > towerElementDistance.range * 32) {
+                        towerElementDistance.target.monsterElm.classList.remove("targeted");
+                        towerElementDistance.isTargetAcquired = false;
+                        towerElementDistance.target = null;
+                        towerElementDistance.killCurrentProjectiles();
+                    } else {
+                        towerElementDistance.shoot();
+                    }
+                }
+            });
+        }, 500);
+
+        setInterval(() => {
+            this.towerArray.forEach((towerElementMoveProjectile) => {
+                towerElementMoveProjectile.projectilesArray.forEach((projectileElement) => {
+                    if (projectileElement.target.positionX - projectileElement.positionX > 0) {
+                        projectileElement.positionX++;
+                    } else {
+                        projectileElement.positionX--;
+                    }
+                    if (projectileElement.target.positionY - projectileElement.positionY > 0) {
+                        projectileElement.positionY++;
+                    } else {
+                        projectileElement.positionY--;
+                    }
+                    projectileElement.projectileElm.style.bottom = projectileElement.positionY - projectileElement.width / 2 + "px";
+                    projectileElement.projectileElm.style.left = projectileElement.positionX - projectileElement.width / 2 + "px";
+                    towerElementMoveProjectile.setDamage(projectileElement);
+                });
+            });
+        }, 5);
     }
     removeMonster(monsterInstance) {
         if (this.map.wayPoint[this.map.wayPoint.length - 1].x * this.map.squareDimension + this.map.squareDimension / 2 === monsterInstance.positionX && this.map.wayPoint[this.map.wayPoint.length - 1].y * this.map.squareDimension + this.map.squareDimension / 2 === monsterInstance.positionY) {
             monsterInstance.monsterElm.remove();
             this.monsterArray.shift();
         }
+    }
+    earnMoney(){
+
     }
 }
 
@@ -51,11 +103,12 @@ class Map {
 }
 
 class Monster {
-    constructor(type, health, attack, width, positionX, positionY) {
+    constructor(type, health, attack, price, width, positionX, positionY) {
         this.type = type;
         this.health = health;
         this.attack = attack;
         this.monsterElm = null;
+        this.price = price;
         this.positionX = positionX * game.map.squareDimension + game.map.squareDimension / 2;
         this.positionY = positionY * game.map.squareDimension + game.map.squareDimension / 2;
         this.width = width;
@@ -111,17 +164,17 @@ class Monster {
 }
 class Soldier extends Monster {
     constructor(positionX, positionY) {
-        super('soldier', 5, 1, 20, positionX, positionY);
+        super('soldier', 5, 1, 25, 20, positionX, positionY);
     }
 }
 class Tank extends Monster {
     constructor(positionX, positionY) {
-        super('tank', 20, 2, 26, positionX, positionY);
+        super('tank', 20, 2, 50, 26, positionX, positionY);
     }
 }
 class Boss extends Monster {
     constructor(positionX, positionY) {
-        super('boss', 15, 5, 32, positionX, positionY);
+        super('boss', 15, 5, 100, 32, positionX, positionY);
     }
 }
 
@@ -138,6 +191,9 @@ class Tower {
         this.power = power;
         this.rateOfFire = rateOfFire;
         this.range = range;
+        this.cost = 50;
+
+
         this.projectilesArray = [];
 
         this.isTargetAcquired = false;
@@ -148,9 +204,11 @@ class Tower {
         this.width = 64;
         this.towerElm = null;
 
+        this.spendMoney();
         this.createDomElementTower();
-        this.checkDistanceMonster();
-        this.moveProjectile();
+    }
+    spendMoney(){
+        game.money -= this.cost; 
     }
     createDomElementTower() {
         this.towerElm = document.createElement('div');
@@ -168,71 +226,24 @@ class Tower {
         ctx.fill();
         ctx.closePath();
     }*/
-
-    checkDistanceMonster() {
-        setInterval(() => {
-            let distance = 0;
-            if (this.isTargetAcquired === false) {
-                game.monsterArray.some((monsterElement) => {
-                    distance = Math.sqrt(Math.pow(monsterElement.positionX - this.positionX, 2) + Math.pow(monsterElement.positionY - this.positionY, 2));
-                    if (distance <= this.range * 32) {
-                        this.isTargetAcquired = true;
-                        this.target = monsterElement;
-                        monsterElement.monsterElm.classList.add("targeted");
-                        this.shoot();
-                        return true;
-                    }
-                });
-            } else {
-                distance = Math.sqrt(Math.pow(this.target.positionX - this.positionX, 2) + Math.pow(this.target.positionY - this.positionY, 2));
-                if (distance > this.range * 32) {
-                    this.target.monsterElm.classList.remove("targeted");
-                    this.isTargetAcquired = false;
-                    this.target = null;
-                    this.killCurrentProjectiles();
-
-                    return true;
-                } else {
-                    this.shoot();
-                }
-            }
-        }, 600 - this.rateOfFire);
-    }
     shoot() {
-        const projectile = new Projectile(this, this.target, this.power);
+        const projectile = new Projectile(this, this.target);
         this.projectilesArray.push(projectile);
-    }
-
-    moveProjectile() {
-        setInterval(() => {
-            this.projectilesArray.forEach((projectileElement) => {
-                if (this.target.positionX - projectileElement.positionX > 0) {
-                    projectileElement.positionX++;
-                } else {
-                    projectileElement.positionX--;
-                }
-                if (this.target.positionY - projectileElement.positionY > 0) {
-                    projectileElement.positionY++;
-                } else {
-                    projectileElement.positionY--;
-                }
-                projectileElement.projectileElm.style.bottom = projectileElement.positionY - projectileElement.width / 2 + "px";
-                projectileElement.projectileElm.style.left = projectileElement.positionX - projectileElement.width / 2 + "px";
-                this.setDamage(projectileElement);
-            });
-        }, 1);
     }
     setDamage(projectile) {
         if (this.target.positionX === projectile.positionX && this.target.positionY === projectile.positionY) {
             this.target.health -= projectile.damage;
-            this.projectilesArray.splice(this.projectilesArray.indexOf(projectile), 1);
+            if (this.projectilesArray.indexOf(projectile) != -1) {
+                this.projectilesArray.splice(this.projectilesArray.indexOf(projectile), 1);
+            }
             projectile.projectileElm.remove();
             if (this.target.health <= 0) {
-                this.target.monsterElm.remove();
-                game.monsterArray.splice(game.monsterArray.indexOf(this.target), 1);
-                this.isTargetAcquired = false;
-                this.target = null;
                 this.killCurrentProjectiles();
+                if (game.monsterArray.indexOf(this.target) != -1) {
+                    game.monsterArray.splice(game.monsterArray.indexOf(this.target), 1);
+                }
+                this.isTargetAcquired = false;
+                this.target.monsterElm.remove();
             }
         }
     }
@@ -242,7 +253,6 @@ class Tower {
         });
         this.projectilesArray = [];
     }
-
 }
 
 
@@ -260,7 +270,6 @@ class Projectile {
         this.damage = sourceTower.power;
         this.createDomElementProjectile();
     }
-
     createDomElementProjectile() {
         this.projectileElm = document.createElement('div');
         this.projectileElm.setAttribute("class", "projectile");
@@ -468,8 +477,8 @@ game.start();
 window.addEventListener("click", (evt) => {
     console.log(evt.target.dataset.positionX);
     console.log(evt.target.dataset.positionY);
-    
-    if (evt.target.className === "placement") {
+
+    if (evt.target.className === "placement" && game.money >= 50) {
         game.towerArray.push(new Tower(1, 10, 5, evt.target.dataset.positionX, evt.target.dataset.positionY));
     }
 });

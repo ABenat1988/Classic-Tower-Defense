@@ -8,7 +8,7 @@ body {
 }
 
 
-#board {
+#map-area {
     background-color: #800000;
     width: 1280px;
     height: 768px;
@@ -16,12 +16,12 @@ body {
     margin: 2.5vh 2.5vh;
     background-image: url("../images/maplevel1.png");
 }
-#board:after {
+#map-area:after {
     content: "";
     display: block;
     padding-bottom: 100%;
 }
-#board>div div {
+#map-area>div div {
     position: absolute;
 }
 
