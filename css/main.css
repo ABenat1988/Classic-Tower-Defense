@@ -11,9 +11,11 @@ body {
 #board {
     background-color: #800000;
     /*height: 80vh;*/
-    width: 45%;
+    width: 1280px;
+    height: 768px;
     position: relative;
     margin: 2.5vh 2.5vh;
+    background-image: url("/images/maplevel1.png");
 }
 #board:after {
     content: "";
@@ -27,57 +29,36 @@ canvas{
     z-index: 1000;
 }
 
-.line div {
-    width : 1%;
-    height: 1%;
-    position: absolute;
-}
-.line div.v0{
-    background-color:#ffe4e1;
-}
-.line div.v1{
-    background-color:#fff61e;
-}
-.line div.v2{
-    background-color:#5eff5e;
-}
-.line div.v3{
-    background-color:#4e643a;
-}
-.line div.v4{
-    background-color:#8fb15d;
-}
-.line div.v5{
-    background-color:#3d6e6a;
-}
-.line div.v6{
-    background-color:#fa9a50;
-}
-
-.way-point{
-    width : 1%;
-    height: 1%;
-    position: absolute;
-    background-color:#000000;
-}
-
 #monsters .monster{
-    width : 1%;
-    height: 1%;
+    width : 20px;
+    height: 20px;
     position: absolute;
     background-color:#000000;
 }
 #monsters .targeted{
-    width : 1%;
-    height: 1%;
-    position: absolute;
     background-color:#00f7ff;
 }
 
 
 #towers .tower{
-    width : 1%;
-    height: 1%;
+    width : 64px;
+    height: 64px;
     position: absolute;
     background-color:#1900ff;
+}
+
+
+#projectiles .projectile{
+    width : 15px;
+    height: 15px;
+    position: absolute;
+    background-color:#ff0000;
+}
+
+#towers-placement .placement{
+    width : 64px;
+    height: 64px;
+    position: absolute;
+    background-color:#ff0000;
+
 }
