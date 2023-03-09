@@ -1,27 +1,29 @@
 * {
     margin: 0;
     padding: 0;
+    color: white;
 }
+
 body {
     margin: 0;
     padding: 0;
     display: flex;
+    background-color: #000000;
 }
 
 
 #map-area {
-    background-color: #800000;
-    width: 1280px;
-    height: 768px;
     position: relative;
-    margin: 2.5vh 2.5vh;
+    margin: 2.5vh 0 2.5vh 2.5vh;
     background-image: url("../images/maplevel1.png");
 }
+
 #map-area:after {
     content: "";
     display: block;
     padding-bottom: 100%;
 }
+
 #map-area>div div {
     position: absolute;
 }
@@ -37,57 +39,99 @@ canvas {
 #monsters .targeted {
     background-color: #00f7ff;
 }
+
 #monsters .monster.soldier {
-    width: 20px;
-    height: 20px;
     background-image: url("../images/enemi-soldier-bg.png");
 }
+
 #monsters .monster.tank {
-    width: 26px;
-    height: 26px;
     background-image: url("../images/enemi-tank-bg.png");
 }
+
 #monsters .monster.boss {
-    width: 32px;
-    height: 32px;
     background-image: url("../images/enemi-boss-bg.png");
 }
 
 
-#towers-placement .placement {
-    width: 64px;
-    height: 64px;
+#tower-spots .spot {
     background-color: rgba(221, 211, 211, 0.4);
 }
-#towers-placement .placement:hover {
+
+#tower-spots .spot:hover {
     background-color: rgba(221, 211, 211, 0.8);
 }
 
 
 #towers .tower {
-    width: 64px;
-    height: 64px;
     background-image: url("../images/tower-animated.gif");
 }
 
 
 #projectiles .projectile {
-    width: 10px;
-    height: 10px;
     background-image: url("../images/projectile-animated.gif");
 }
 
 
 
-#board{
+#board {
     display: flex;
+    width: 25vw;
+    margin: 2.5vh 2.5vh 2.5vh 0vh;
+    background-image: url("../images/board.gif");
+    background-size: 100% 100%;
+    flex-wrap: wrap;
+    flex-direction: column;
+}
+
+#board #stats {
+    margin-top: 12vh;
+    padding: 15px;
+    display: flex;
+    justify-content: space-evenly;
+}
+#board #stats>div {
+    background-image: url("../images/UI_box1.png");
+    background-size: 100% 100%;
+    display: flex;
+    align-items: center;
+    padding: 7px 0px;
+    justify-content: center;
+    flex-basis: 27%;
+}
+
+#board #coin {
+}
+
+#board #heart {
+}
+
+#board #wave-counter {
+}
+
+#board #next-wave {
+    margin: 0 auto;
+}
+#board #next-wave button{
+    padding: 20px;
+    background-color: #011b30;
+}
+#board #next-wave button:hover{
+    background-color: #000000;
 }
 
 
-#game-over{
+#game-over {
     height: 100vh;
     width: 100vw;
     background-image: url("../images/game-over-background.gif");
+    background-position: center;
+    background-size: 100%;
+}
+
+#victory {
+    height: 100vh;
+    width: 100vw;
+    background-image: url("../images/victory-background.jpg");
     background-position: center;
     background-size: 100%;
 }

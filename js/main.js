@@ -1,36 +1,36 @@
 class Game {
-    constructor() {
+    constructor(money, heart) {
         this.map = null;
         this.monsterArray = [];
         this.towerArray = [];
-        this.money = 100;
-        this.heart = 10;
+        this.money = money;
+        this.heart = heart;
+        this.waveCounter = 0;
     }
 
     start() {
-        this.map = new Map(wayPointsLevel1, towerPlacementLevel1);
+        //creation of map object and stats values
+        this.map = new Map(wayPointsLevel1, towerSpotLevel1, wavesLevel1, 32, 24,40);
         this.updateBoardText("#coin span", this.money);
         this.updateBoardText("#heart span", this.heart);
     }
-    launch(){
-        setInterval(() => {
-            const monster = new Tank(this.map.wayPoint[0].x, this.map.wayPoint[0].y);
-            this.monsterArray.push(monster);
-        }, 1750);
-
+    launch() {
+        //manage movement of monsters
         setInterval(() => {
             this.monsterArray.forEach((monsterElementInterval) => {
                 monsterElementInterval.moveMonster();
                 this.removeMonsterEndofWay(monsterElementInterval);
             });
-        }, 10);
+        }, 20);
+
+        //check distance between each tower & each monster
         setInterval(() => {
             this.towerArray.forEach((towerElementDistance) => {
                 let distance = 0;
-                if (towerElementDistance.isTargetAcquired === false) {
-                    this.monsterArray.some((monsterElement) => {
+                if (towerElementDistance.isTargetAcquired === false) { //case tower without target
+                    this.monsterArray.some((monsterElement) => { //test every monster, stop when target acquired
                         distance = Math.sqrt(Math.pow(monsterElement.positionX - towerElementDistance.positionX, 2) + Math.pow(monsterElement.positionY - towerElementDistance.positionY, 2));
-                        if (distance <= towerElementDistance.range * 32) {
+                        if (distance <= towerElementDistance.range * this.map.squareDimension) {
                             towerElementDistance.isTargetAcquired = true;
                             towerElementDistance.target = monsterElement;
                             monsterElement.monsterElm.classList.add("targeted");
@@ -38,9 +38,9 @@ class Game {
                             return true;
                         }
                     });
-                } else {
+                } else { //case tower with target
                     distance = Math.sqrt(Math.pow(towerElementDistance.target.positionX - towerElementDistance.positionX, 2) + Math.pow(towerElementDistance.target.positionY - towerElementDistance.positionY, 2));
-                    if (distance > towerElementDistance.range * 32) {
+                    if (distance > towerElementDistance.range * this.map.squareDimension) { //check if target out of range
                         towerElementDistance.target.monsterElm.classList.remove("targeted");
                         towerElementDistance.isTargetAcquired = false;
                         towerElementDistance.target = null;
@@ -51,7 +51,7 @@ class Game {
                 }
             });
         }, 500);
-
+        //manage movement of projectiles
         setInterval(() => {
             this.towerArray.forEach((towerElementMoveProjectile) => {
                 towerElementMoveProjectile.projectilesArray.forEach((projectileElement) => {
@@ -72,7 +72,40 @@ class Game {
             });
         }, 5);
     }
-    removeMonsterEndofWay(monsterInstance) {
+    updateBoardText(target, value) {
+        document.querySelector(target).innerText = value;
+    }
+    spendMoney(cost) {
+        if (this.money - cost >= 0) {
+            this.money -= cost;
+            this.updateBoardText("#coin span", this.money)
+            return true
+        } else {
+            return false;
+        }
+    }
+    earnMoney(revenu) {
+        this.money += revenu;
+        this.updateBoardText("#coin span", this.money);
+    }
+    checkGameOver() {
+        if (this.heart <= 0) {
+            window.location.href = "./gameover.html";
+        }
+    }
+    checkVictory() {
+        if (this.waveCounter === game.map.waveslist.length && this.monsterArray.length === 0) {
+            window.location.href = "./victory.html";
+        }
+    }
+    increaseWave() {
+        this.waveCounter++;
+        this.updateBoardText("#wave-counter span", this.waveCounter);
+    }
+    createTower(event) {
+        this.towerArray.push(new Tower(1, 10, 5, event.target.dataset.positionX, event.target.dataset.positionY));
+    }
+    removeMonsterEndofWay(monsterInstance) { //when monster arrive end of the way, remove life based on attack's monster and check Game Over
         if (this.map.wayPoint[this.map.wayPoint.length - 1].x * this.map.squareDimension + this.map.squareDimension / 2 === monsterInstance.positionX && this.map.wayPoint[this.map.wayPoint.length - 1].y * this.map.squareDimension + this.map.squareDimension / 2 === monsterInstance.positionY) {
             this.heart -= monsterInstance.attack;
             this.checkGameOver();
@@ -81,43 +114,35 @@ class Game {
             this.monsterArray.shift();
         }
     }
-    updateBoardText(target, value){
-        document.querySelector(target).innerText = value;
-    }
-    spendMoney(cost){
-        if(this.money - cost >= 0){
-            this.money -= cost;
-            this.updateBoardText("#coin span", this.money)
-            return true
-        } else {
-            return false;
-        }
-    }
-    checkGameOver(){
-        if (this.heart >0){
-            window.location.href = "./gameover.html" ;
-        }
-    }
 }
 
 class Map {
-    constructor(wayPoint, towerPlacement) {
+    constructor(wayPoint, towerspot, waveslist, squareDimension, numberSquareHeigth, numberSquareWidth) {
         this.wayPoint = wayPoint;
-        this.towerPlacement = towerPlacement
-        this.squareDimension = 32;
-        this.numberSquareHeigth = 24;
-        this.numberSquareHeigth = 40;
-        this.createDomElementTowerPlacement();
+        this.towerspot = towerspot;
+        this.waveslist = waveslist;
+        this.squareDimension = squareDimension;
+        this.numberSquareHeigth = numberSquareHeigth;
+        this.numberSquareWidth = numberSquareWidth;
+        this.createDomElementMap();
+        this.createDomElementTowerSpot();
     }
-    createDomElementTowerPlacement() {
-        this.towerPlacement.forEach((element) => {
+    createDomElementMap(){
+        const mapDom = document.getElementById("map-area")
+        mapDom.style.height = this.squareDimension* this.numberSquareHeigth + "px";
+        mapDom.style.width = this.squareDimension*this.numberSquareWidth + "px";
+    }
+    createDomElementTowerSpot() {
+        this.towerspot.forEach((element) => {
             const divTower = document.createElement('div');
-            divTower.setAttribute("class", "placement");
+            divTower.setAttribute("class", "spot");
             divTower.dataset.positionX = element.x;
             divTower.dataset.positionY = element.y;
+            divTower.style.width = this.squareDimension * 2 + "px";
+            divTower.style.height = this.squareDimension * 2 + "px";
             divTower.style.left = element.x * this.squareDimension + "px";
             divTower.style.bottom = element.y * this.squareDimension + "px";
-            document.getElementById("towers-placement").appendChild(divTower);
+            document.getElementById("tower-spots").appendChild(divTower);
         });
     }
 }
@@ -152,6 +177,8 @@ class Monster {
             default:
                 this.monsterElm.setAttribute("class", "error");
         }
+        this.monsterElm.style.width = this.width + "px";
+        this.monsterElm.style.height = this.width + "px";
         this.monsterElm.style.left = this.positionX - this.width / 2 + "px";
         this.monsterElm.style.bottom = this.positionY - this.width / 2 + "px";
         document.getElementById("monsters").appendChild(this.monsterElm);
@@ -185,17 +212,17 @@ class Monster {
 }
 class Soldier extends Monster {
     constructor(positionX, positionY) {
-        super('soldier', 5, 1, 25, 20, positionX, positionY);
+        super('soldier', 5, 1, 10, 20, positionX, positionY);
     }
 }
 class Tank extends Monster {
     constructor(positionX, positionY) {
-        super('tank', 20, 2, 50, 26, positionX, positionY);
+        super('tank', 20, 2, 30, 26, positionX, positionY);
     }
 }
 class Boss extends Monster {
     constructor(positionX, positionY) {
-        super('boss', 15, 5, 100, 32, positionX, positionY);
+        super('boss', 15, 5, 40, 32, positionX, positionY);
     }
 }
 
@@ -218,6 +245,8 @@ class Tower {
     createDomElementTower() {
         this.towerElm = document.createElement('div');
         this.towerElm.setAttribute("class", "tower");
+        this.towerElm.style.width = this.width + "px";
+        this.towerElm.style.height = this.width + "px";
         this.towerElm.style.left = this.positionX - this.width / 2 + "px";
         this.towerElm.style.bottom = this.positionY - this.width / 2 + "px";
         document.getElementById("towers").appendChild(this.towerElm);
@@ -243,9 +272,14 @@ class Tower {
             }
             projectile.projectileElm.remove();
             if (this.target.health <= 0) {
+                if (this.target.alreadyDestroyed === false) {
+                    game.earnMoney(this.target.revenu);
+                    this.target.alreadyDestroyed = true;
+                }
                 this.killCurrentProjectiles();
                 if (game.monsterArray.indexOf(this.target) != -1) {
                     game.monsterArray.splice(game.monsterArray.indexOf(this.target), 1);
+                    game.checkVictory();
                 }
                 this.isTargetAcquired = false;
                 this.target.monsterElm.remove();
@@ -274,9 +308,60 @@ class Projectile {
     createDomElementProjectile() {
         this.projectileElm = document.createElement('div');
         this.projectileElm.setAttribute("class", "projectile");
+        this.projectileElm.style.width = this.width + "px";
+        this.projectileElm.style.height = this.width + "px";
         this.projectileElm.style.left = this.positionX - this.width / 2 + "px";
         this.projectileElm.style.bottom = this.positionY - this.width / 2 + "px";
         document.getElementById("projectiles").appendChild(this.projectileElm);
+    }
+}
+
+
+
+
+
+
+
+
+//const canvas = document.querySelector('canvas');
+//const ctx = canvas.getContext('2d');
+
+window.addEventListener("click", (evt) => {
+    if (evt.target.className === "spot" && game.spendMoney(50)) {
+        game.createTower(evt);
+    }
+    if (evt.target.id === "next-wave-button") {
+        if (game.waveCounter < game.map.waveslist.length) {
+            game.increaseWave();
+            createAndWait(game.map.waveslist, game.waveCounter, 0);
+        }
+
+    }
+});
+
+async function createAndWait(waveArray, waveNumber, step) {
+    await new Promise(r => setTimeout(r, waveArray[waveNumber - 1][step]));
+    let monster
+    switch (waveArray[waveNumber - 1][step + 1]) {
+        case 'soldier':
+            monster = new Soldier(game.map.wayPoint[0].x, game.map.wayPoint[0].y);
+            game.monsterArray.push(monster);
+            break;
+        case 'tank':
+            monster = new Tank(game.map.wayPoint[0].x, game.map.wayPoint[0].y);
+            game.monsterArray.push(monster);
+            break;
+        case 'boss':
+            monster = new Boss(game.map.wayPoint[0].x, game.map.wayPoint[0].y);
+            game.monsterArray.push(monster);
+            break;
+        default:
+    }
+    if (step < waveArray[waveNumber - 1].length) {
+        step += 2;
+        return createAndWait(waveArray, waveNumber, step);
+    } else {
+        return;
     }
 }
 
@@ -347,140 +432,123 @@ const wayPointsLevel1 = [
         newDirection: 'end'
     }
 ];
-const towerPlacementLevel1 = [
+const towerSpotLevel1 = [
     {
         x: 7,
-        y: 4,
-        free: true
+        y: 4
     },
     {
         x: 7,
-        y: 7,
-        free: true
+        y: 7
     },
     {
         x: 10,
-        y: 7,
-        free: true
+        y: 7
     },
     {
         x: 13,
-        y: 7,
-        free: true
+        y: 7
     },
     {
         x: 5,
-        y: 12,
-        free: true
+        y: 12
     },
     {
         x: 8,
-        y: 12,
-        free: true
+        y: 12
     },
     {
         x: 11,
-        y: 12,
-        free: true
+        y: 12
     },
     {
         x: 6,
-        y: 18,
-        free: true
+        y: 18
     },
     {
         x: 9,
-        y: 18,
-        free: true
+        y: 18
     },
     {
         x: 12,
-        y: 18,
-        free: true
+        y: 18
     },
     {
         x: 23,
-        y: 17,
-        free: true
+        y: 17
     },
     {
         x: 23,
-        y: 14,
-        free: true
+        y: 14
     },
     {
         x: 23,
-        y: 11,
-        free: true
+        y: 11
     },
     {
         x: 23,
-        y: 8,
-        free: true
+        y: 8
     },
     {
         x: 18,
-        y: 15,
-        free: true
+        y: 15
     },
     {
         x: 18,
-        y: 12,
-        free: true
+        y: 12
     },
     {
         x: 18,
-        y: 9,
-        free: true
+        y: 9
     },
     {
         x: 18,
-        y: 6,
-        free: true
+        y: 6
     },
     {
         x: 18,
-        y: 3,
-        free: true
+        y: 3
     },
     {
         x: 23,
-        y: 4,
-        free: true
+        y: 4
     },
     {
         x: 27,
-        y: 4,
-        free: true
+        y: 4
     },
     {
         x: 30,
-        y: 4,
-        free: true
+        y: 4
     },
     {
         x: 33,
-        y: 4,
-        free: true
+        y: 4
     },
     {
         x: 36,
-        y: 4,
-        free: true
+        y: 4
     }
 ];
+const wavesLevel1 = [
+    [1750, "soldier", 1500, "soldier", 1500, "soldier", 1500, "soldier", 1500, "soldier", 1000, "soldier", 1000, "soldier", 800, "soldier", 800, "soldier", 800, "soldier"],
+    [1750, "soldier", 1500, "soldier", 1500, "tank", 1500, "soldier", 1500, "soldier", 1500, "tank", 1500, "soldier", 1500, "soldier", 1500, "soldier", 1500, "tank"],
+    [1750, "soldier", 1500, "tank", 1500, "tank", 1500, "soldier", 1500, "soldier", 1500, "tank", 1500, "soldier", 1500, "soldier", 1500, "soldier", 1500, "tank"],
+    [1750, "soldier", 1500, "soldier", 1500, "tank", 1500, "soldier", 1500, "soldier", 1500, "tank", 1500, "soldier", 1500, "soldier", 1500, "boss", 1500, "tank"],
+    [1750, "soldier", 1500, "soldier", 1500, "tank", 1500, "soldier", 1500, "soldier", 1500, "tank", 1500, "soldier", 1500, "soldier", 1500, "soldier", 1500, "tank"],
+    [1750, "soldier", 1500, "soldier", 1500, "boss", 1500, "soldier", 1500, "tank", 1500, "tank", 1500, "soldier", 1500, "soldier", 1500, "soldier", 1500, "tank"],
+    [1750, "boss", 1500, "soldier", 1500, "tank", 1500, "soldier", 1500, "soldier", 1500, "tank", 1500, "soldier", 1500, "soldier", 1500, "soldier", 1500, "tank"],
+    [1750, "tank", 1500, "boss", 1500, "tank", 1500, "boss", 1500, "soldier", 1500, "tank", 1500, "soldier", 1500, "soldier", 1500, "soldier", 1500, "tank"],
+    [1750, "tank", 1500, "boss", 1500, "tank", 1500, "boss", 1500, "soldier", 1500, "tank", 1500, "soldier", 1500, "soldier", 1500, "soldier", 1500, "tank"],
+    [1750, "tank", 1500, "boss", 1500, "tank", 1500, "boss", 1500, "soldier", 1500, "tank", 1500, "soldier", 1500, "soldier", 1500, "soldier", 1500, "tank"],
+    [1750, "tank", 1500, "boss", 1500, "tank", 1500, "boss", 1500, "soldier", 1500, "tank", 1500, "soldier", 1500, "soldier", 1500, "soldier", 1500, "tank"],
+    [1750, "tank", 1500, "boss", 1500, "tank", 1500, "boss", 1500, "soldier", 1500, "tank", 1500, "soldier", 1500, "soldier", 1500, "soldier", 1500, "tank"],
+    [1750, "tank", 1500, "boss", 1500, "tank", 1500, "boss", 1500, "soldier", 1500, "tank", 1500, "soldier", 1500, "soldier", 1500, "soldier", 1500, "tank"],
+    [1750, "tank", 1500, "boss", 1500, "tank", 1500, "boss", 1500, "soldier", 1500, "tank", 1500, "soldier", 1500, "soldier", 1500, "soldier", 1500, "tank"],
+    [1750, "tank", 1500, "boss", 1500, "tank", 1500, "boss", 1500, "soldier", 1500, "tank", 1500, "soldier", 1500, "soldier", 1500, "soldier", 1500, "tank"]
+];
 
-//const canvas = document.querySelector('canvas');
-//const ctx = canvas.getContext('2d');
-const game = new Game();
+const game = new Game(100, 10);
 game.start();
 game.launch();
 
-window.addEventListener("click", (evt) => {
-    console.log(evt.target.dataset.positionX);
-    console.log(evt.target.dataset.positionY);
-
-    if (evt.target.className === "placement" && game.spendMoney(50)) {
-        game.towerArray.push(new Tower(1, 10, 5, evt.target.dataset.positionX, evt.target.dataset.positionY));
-    }
-});
