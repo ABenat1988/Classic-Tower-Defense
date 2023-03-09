@@ -10,7 +10,7 @@ class Game {
 
     start() {
         //creation of map object and stats values
-        this.map = new Map(wayPointsLevel1, towerSpotLevel1, wavesLevel1, 32, 24,40);
+        this.map = new Map(wayPointsLevel1, towerSpotLevel1, wavesLevel1, 32, 24, 40);
         this.updateBoardText("#coin span", this.money);
         this.updateBoardText("#heart span", this.heart);
     }
@@ -103,7 +103,7 @@ class Game {
         this.updateBoardText("#wave-counter span", this.waveCounter);
     }
     createTower(event) {
-        this.towerArray.push(new Tower(1, 10, 5, event.target.dataset.positionX, event.target.dataset.positionY));
+        this.towerArray.push(new Tower(1, 5, event.target.dataset.positionX, event.target.dataset.positionY));
     }
     removeMonsterEndofWay(monsterInstance) { //when monster arrive end of the way, remove life based on attack's monster and check Game Over
         if (this.map.wayPoint[this.map.wayPoint.length - 1].x * this.map.squareDimension + this.map.squareDimension / 2 === monsterInstance.positionX && this.map.wayPoint[this.map.wayPoint.length - 1].y * this.map.squareDimension + this.map.squareDimension / 2 === monsterInstance.positionY) {
@@ -127,10 +127,10 @@ class Map {
         this.createDomElementMap();
         this.createDomElementTowerSpot();
     }
-    createDomElementMap(){
+    createDomElementMap() {
         const mapDom = document.getElementById("map-area")
-        mapDom.style.height = this.squareDimension* this.numberSquareHeigth + "px";
-        mapDom.style.width = this.squareDimension*this.numberSquareWidth + "px";
+        mapDom.style.height = this.squareDimension * this.numberSquareHeigth + "px";
+        mapDom.style.width = this.squareDimension * this.numberSquareWidth + "px";
     }
     createDomElementTowerSpot() {
         this.towerspot.forEach((element) => {
@@ -227,28 +227,26 @@ class Boss extends Monster {
 }
 
 class Tower {
-    constructor(power, rateOfFire, range, positionX, positionY) {
+    constructor(power, range, positionX, positionY) {
         this.power = power;
-        this.rateOfFire = rateOfFire;
         this.range = range;
-        this.level = 1;
         this.cost = 50;
         this.projectilesArray = [];
         this.isTargetAcquired = false;
         this.target = null;
         this.positionX = positionX * game.map.squareDimension + game.map.squareDimension;
         this.positionY = positionY * game.map.squareDimension + game.map.squareDimension;
-        this.width = 64;
+        this.width = 2;
         this.towerElm = null;
         this.createDomElementTower();
     }
     createDomElementTower() {
         this.towerElm = document.createElement('div');
         this.towerElm.setAttribute("class", "tower");
-        this.towerElm.style.width = this.width + "px";
-        this.towerElm.style.height = this.width + "px";
-        this.towerElm.style.left = this.positionX - this.width / 2 + "px";
-        this.towerElm.style.bottom = this.positionY - this.width / 2 + "px";
+        this.towerElm.style.width = this.width * game.map.squareDimension + "px";
+        this.towerElm.style.height = this.width * game.map.squareDimension + "px";
+        this.towerElm.style.left = this.positionX - this.width * game.map.squareDimension / 2 + "px";
+        this.towerElm.style.bottom = this.positionY - this.width * game.map.squareDimension / 2 + "px";
         document.getElementById("towers").appendChild(this.towerElm);
         //this.displayRange()
     }
