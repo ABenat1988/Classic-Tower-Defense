@@ -294,7 +294,6 @@ class Tower {
 
 class Projectile {
     constructor(sourceTower, target) {
-        this.sourceTower = sourceTower;
         this.positionX = sourceTower.positionX;
         this.positionY = sourceTower.positionY;
         this.projectileElm = null;
