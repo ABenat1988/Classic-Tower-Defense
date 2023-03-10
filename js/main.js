@@ -103,7 +103,7 @@ class Game {
         this.updateBoardText("#wave-counter span", this.waveCounter);
     }
     createTower(event) {
-        this.towerArray.push(new Tower(1, 5, event.target.dataset.positionX, event.target.dataset.positionY));
+        this.towerArray.push(new BlueTower(event.target.dataset.positionX, event.target.dataset.positionY));
     }
     removeMonsterEndofWay(monsterInstance) { //when monster arrive end of the way, remove life based on attack's monster and check Game Over
         if (this.map.wayPoint[this.map.wayPoint.length - 1].x * this.map.squareDimension + this.map.squareDimension / 2 === monsterInstance.positionX && this.map.wayPoint[this.map.wayPoint.length - 1].y * this.map.squareDimension + this.map.squareDimension / 2 === monsterInstance.positionY) {
@@ -289,6 +289,11 @@ class Tower {
             projectileElement.projectileElm.remove();
         });
         this.projectilesArray = [];
+    }
+}
+class BlueTower extends Tower {
+    constructor(positionX, positionY) {
+        super(1, 5, positionX, positionY);
     }
 }
 
