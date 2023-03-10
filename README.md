@@ -361,6 +361,8 @@ special thank to Chris from the YT channel Chris Courses (https://www.youtube.co
 
 **IMPORTANT: only the creation of the map & the waypoint logic were taken from his work.**
 
+**no piece of code has been reused**
+
 
 creation of the map: https://www.mapeditor.org/
 
