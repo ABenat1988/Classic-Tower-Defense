@@ -13,6 +13,9 @@ class Game {
         this.map = new Map(wayPointsLevel1, towerSpotLevel1, wavesLevel1, 32, 24, 40);
         this.updateBoardText("#coin span", this.money);
         this.updateBoardText("#heart span", this.heart);
+        this.updateBoardText("#heart span", this.heart);
+        this.updateBoardText("#current-wave", this.waveCounter);
+        this.updateBoardText("#total-waves", this.map.waveslist.length);
     }
     launch() {
         //manage movement of monsters
