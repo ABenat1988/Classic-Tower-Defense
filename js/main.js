@@ -18,13 +18,6 @@ class Game {
         this.updateBoardText("#total-waves", this.map.waveslist.length);
     }
     launch() {
-        //manage movement of monsters
-        setInterval(() => {
-            this.monsterArray.forEach((monsterElementInterval) => {
-                monsterElementInterval.moveMonster();
-                this.removeMonsterEndofWay(monsterElementInterval);
-            });
-        }, 20);
 
         //check distance between each tower & each monster
         setInterval(() => {
@@ -108,15 +101,6 @@ class Game {
     createTower(event) {
         this.towerArray.push(new BlueTower(event.target.dataset.positionX, event.target.dataset.positionY));
     }
-    removeMonsterEndofWay(monsterInstance) { //when monster arrive end of the way, remove life based on attack's monster and check Game Over
-        if (this.map.wayPoint[this.map.wayPoint.length - 1].x * this.map.squareDimension + this.map.squareDimension / 2 === monsterInstance.positionX && this.map.wayPoint[this.map.wayPoint.length - 1].y * this.map.squareDimension + this.map.squareDimension / 2 === monsterInstance.positionY) {
-            this.heart -= monsterInstance.attack;
-            this.checkGameOver();
-            this.updateBoardText("#heart span", this.heart);
-            monsterInstance.monsterElm.remove();
-            this.monsterArray.shift();
-        }
-    }
 }
 
 class Map {
@@ -158,58 +142,47 @@ class Monster {
         this.revenu = revenu;
         this.monsterElm = null;
         this.alreadyDestroyed = false;
-        this.positionX = positionX * game.map.squareDimension + game.map.squareDimension / 2;
-        this.positionY = positionY * game.map.squareDimension + game.map.squareDimension / 2;
         this.width = width;
-        this.movementDirection = null;
-        this.createDomElementMonster();
+        this.positionX = positionX * game.map.squareDimension + game.map.squareDimension / 2 - this.width / 2;
+        this.positionY = positionY * game.map.squareDimension + game.map.squareDimension / 2 - this.width / 2;
+        this.currentWaypoint = 0;
     }
-    createDomElementMonster() {
-        this.monsterElm = document.createElement('div');
-        this.monsterElm.setAttribute("class", "monster");
-        switch (this.type) {
-            case 'soldier':
-                this.monsterElm.setAttribute("class", "monster soldier");
-                break;
-            case 'tank':
-                this.monsterElm.setAttribute("class", "monster tank");
-                break;
-            case 'boss':
-                this.monsterElm.setAttribute("class", "monster boss");
-                break;
-            default:
-                this.monsterElm.setAttribute("class", "error");
+    draw() {
+        ctx.fillStyle = "red";
+        ctx.fillRect(this.positionX, this.positionY, this.width, this.width);
+    }
+    update() {
+        ctx.clearRect(this.positionX, this.positionY, this.width, this.width);
+        if (game.map.wayPoint[this.currentWaypoint + 1].x * game.map.squareDimension + game.map.squareDimension / 2 - this.width / 2 === Math.round(this.positionX) &&
+            game.map.wayPoint[this.currentWaypoint + 1].y * game.map.squareDimension + game.map.squareDimension / 2 - this.width / 2 === Math.round(this.positionY)) {
+            this.currentWaypoint++;
         }
-        this.monsterElm.style.width = this.width + "px";
-        this.monsterElm.style.height = this.width + "px";
-        this.monsterElm.style.left = this.positionX - this.width / 2 + "px";
-        this.monsterElm.style.bottom = this.positionY - this.width / 2 + "px";
-        document.getElementById("monsters").appendChild(this.monsterElm);
+        const xDistance = game.map.wayPoint[this.currentWaypoint + 1].x * game.map.squareDimension + game.map.squareDimension / 2 - this.width / 2 - this.positionX;
+        const YDistance = game.map.wayPoint[this.currentWaypoint + 1].y * game.map.squareDimension + game.map.squareDimension / 2 - this.width / 2 - this.positionY;
+        const angle = Math.atan2(YDistance, xDistance);
+        this.positionX += Math.cos(angle);
+        this.positionY += Math.sin(angle);
+        console.log(`game.map.wayPoint[this.currentWaypoint + 1].x: ${game.map.wayPoint[this.currentWaypoint + 1].x}`)
+        console.log(`this.positionX: ${this.positionX}`)
+        console.log(`game.map.wayPoint[this.currentWaypoint + 1].y: ${game.map.wayPoint[this.currentWaypoint + 1].y}`)
+        console.log(`this.positionY: ${this.positionY}`)
+        console.log(`xDistance: ${xDistance}`)
+        console.log(`YDistance: ${YDistance}`)
+        console.log(`this.positionX: ${this.positionX}`)
+        console.log(`this.positionY: ${this.positionY}`)
+        console.log(`----------------------------`)
+        this.draw();
+        this.removeMonsterEndofWay();
+
     }
-    moveMonster() {
-        game.map.wayPoint.forEach((waypoint) => {
-            if (waypoint.x * game.map.squareDimension + game.map.squareDimension / 2 === this.positionX && waypoint.y * game.map.squareDimension + game.map.squareDimension / 2 === this.positionY) {
-                this.movementDirection = waypoint.newDirection;
-            }
-        });
-        switch (this.movementDirection) {
-            case 'top':
-                this.positionY = this.positionY + 1;
-                this.monsterElm.style.bottom = this.positionY - this.width / 2 + "px";
-                break;
-            case 'bottom':
-                this.positionY = this.positionY - 1;
-                this.monsterElm.style.bottom = this.positionY - this.width / 2 + "px";
-                break;
-            case 'left':
-                this.positionX = this.positionX - 1;
-                this.monsterElm.style.left = this.positionX - this.width / 2 + "px";
-                break;
-            case 'right':
-                this.positionX = this.positionX + 1;
-                this.monsterElm.style.left = this.positionX - this.width / 2 + "px";
-                break;
-            default:
+    removeMonsterEndofWay() { //when monster arrive end of the way, remove life based on attack's monster and check Game Over
+        if (game.map.wayPoint[game.map.wayPoint.length - 1].x * game.map.squareDimension + game.map.squareDimension / 2 - this.width / 2 === Math.round(this.positionX) &&
+            game.map.wayPoint[game.map.wayPoint.length - 1].y * game.map.squareDimension + game.map.squareDimension / 2 - this.width / 2 === Math.round(this.positionY)) {
+                game.heart -= this.attack;
+            game.checkGameOver();
+            game.updateBoardText("#heart span", game.heart);
+            game.monsterArray.shift();
+            ctx.clearRect(this.positionX, this.positionY, this.width, this.width);
         }
     }
 }
@@ -328,8 +301,8 @@ class Projectile {
 
 
 
-//const canvas = document.querySelector('canvas');
-//const ctx = canvas.getContext('2d');
+const canvas = document.querySelector('canvas');
+const ctx = canvas.getContext('2d');
 
 window.addEventListener("click", (evt) => {
     if (evt.target.className === "spot" && game.spendMoney(50)) {
@@ -344,6 +317,12 @@ window.addEventListener("click", (evt) => {
     }
 });
 
+function animate() {
+    requestAnimationFrame(animate)
+    game.monsterArray.forEach((monsterElementInterval) => {
+        monsterElementInterval.update();
+    });
+}
 async function createAndWait(waveArray, waveNumber, step) {
     await new Promise(r => setTimeout(r, waveArray[waveNumber - 1][step]));
     let monster
@@ -369,71 +348,70 @@ async function createAndWait(waveArray, waveNumber, step) {
         return;
     }
 }
-
 const wayPointsLevel1 = [
     {
         x: 5,
-        y: 0,
+        y: 23,
         newDirection: 'top'
     },
     {
         x: 5,
-        y: 10,
+        y: 13,
         newDirection: 'right'
     },
     {
         x: 14,
-        y: 10,
+        y: 13,
         newDirection: 'top'
     },
     {
         x: 14,
-        y: 16,
+        y: 7,
         newDirection: 'left'
     },
     {
         x: 5,
-        y: 16,
+        y: 7,
         newDirection: 'top'
     },
     {
         x: 5,
-        y: 20,
+        y: 3,
         newDirection: 'right'
     },
     {
         x: 26,
-        y: 20,
+        y: 3,
         newDirection: 'bottom'
     },
     {
         x: 26,
-        y: 6,
+        y: 17,
         newDirection: 'left'
     },
     {
         x: 21,
-        y: 6,
+        y: 17,
         newDirection: 'top'
     },
     {
         x: 21,
-        y: 17,
+        y: 6,
         newDirection: 'left'
     },
     {
         x: 17,
-        y: 17,
+        y: 6,
         newDirection: 'bottom'
     },
     {
         x: 17,
-        y: 2,
+        y: 21,
         newDirection: 'right'
     },
     {
         x: 39,
-        y: 2,
+        y: 21,
         newDirection: 'end'
     }
 ];
@@ -557,3 +535,4 @@ const game = new Game(100, 10);
 game.start();
 game.launch();
 
+animate();

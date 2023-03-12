@@ -29,11 +29,11 @@ body {
 }
 
 
-canvas {
+/*canvas {
     height: 100%;
     position: absolute;
     z-index: 1000;
-}
+}*/
 
 
 #monsters .targeted {
